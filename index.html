@@ -32,9 +32,13 @@ TODO:
 - Improve colouration 
 - Vanquish magic numbers
 - Tweak label placement to account for line height
+	- Add line labels
+- Better font for labels? More readable
 - Set a timer for the fadeout [x]
-- Add Ukraine by only adding values to the arrays
+- Add Ukraine by only adding values to the arrays [x]
+- Add Libyan exports
 - Move colouration to importers / exporters
+- Size relative to entire production / consumption rather than imports / exports?
 
 */
 
@@ -45,6 +49,7 @@ var Importers = [
 	['UK', 35.4, 'United Kingdom',0],
 	['FR', 35.0, 'France',0],
 	['TR', 34.9, 'Turkey',0],
+	['UE', 29.8, 'Ukraine',0],
 	['BE', 26.2, 'Belgium',0],
 	['NL', 14.5, 'Netherlands',0],
 	['SP', 13.3, 'Spain',0],
@@ -59,36 +64,37 @@ var Exporters = [
 	['RU', 185.9, 'Russia', 0, '#FF3B2F'],
 	['NO', 106.6, 'Norway', 0, '#71CC58'],
 	['NL', 54.5, 'Netherlands', 0, '#76B6CC'],
-	['UK', 12.0, 'United Kingdom', 0],
-	['AL', 34.8, 'Algeria', 0],
+	['UK', 12.0, 'United Kingdom', 0, '#E28922'],
+	['AL', 34.8, 'Algeria', 0, '#1F94E8'],
 	['LB', 6.5, 'Libya', 0]
 ]
 
 var Paths = [
-	['RUDE', 30, '#FF3B2F'],
-	['RUIT', 14, '#FF3B2F'],
-	['RUFR', 7, '#FF3B2F'],
-	['RUTR', 25, '#FF3B2F'],
-	['RUBE', 7, '#FF3B2F'],
-	['RUNL', 2, '#FF3B2F'],
-	['RUPL', 9, '#FF3B2F'],
-	['RUCZ', 7, '#FF3B2F'],
-	['RUAT', 5, '#FF3B2F'],
-	['RUHR', 5,	 '#FF3B2F'],
-	['NLDE', 25, '#76B6CC'],
-	['NLIT', 7,  '#76B6CC'],
-	['NLUK', 7,  '#76B6CC'],
-	['NLFR', 9,  '#76B6CC'],
-	['NLBE', 5,  '#76B6CC'],
-	['NODE', 31, '#71CC58'],
-	['NOIT', 6, '#71CC58'],
-	['NOUK', 27, '#71CC58'],
-	['NOFR',18, '#71CC58'],
-	['NOBE', 9, '#71CC58'],
-	['NONL', 8, '#71CC58'],
-	['NOSP', 2, '#71CC58'],
-	['NOCZ', 3, '#71CC58'],
-	['NOAT', 1, '#71CC58'],
+	['RUDE', 30],
+	['RUIT', 14],
+	['RUFR', 7],
+	['RUTR', 25],
+	['RUUE', 30],
+	['RUBE', 7],
+	['RUNL', 2],
+	['RUPL', 9],
+	['RUCZ', 7],
+	['RUAT', 5],
+	['RUHR', 5],
+	['NLDE', 25],
+	['NLIT', 7],
+	['NLUK', 7],
+	['NLFR', 9],
+	['NLBE', 5],
+	['NODE', 31],
+	['NOIT', 6],
+	['NOUK', 27],
+	['NOFR',18],
+	['NOBE', 9],
+	['NONL', 8],
+	['NOSP', 2],
+	['NOCZ', 3],
+	['NOAT', 1],
 	['UKBE', 5],
 	['UKNL', 2],
 	['UKIR', 5],
@@ -250,7 +256,7 @@ function drawGraphs(svg, height, width) {
 			.attr('d', data)
 			.attr('id', name)
 			.attr('stroke', 'none')
-			.attr('fill', Paths[i][2]);
+			.attr('fill', Exporters[exportCountryIndex][4]);
 
 		var importPosition = y1 - (Paths[i][1] / 2) + 7;
 
