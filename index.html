@@ -22,10 +22,18 @@ h1 {
 
 TODO:
 - Responsive (scales with screen size)
+	- Generate exporter labels [ ]
+	- Generate importer labels [x]
+	- Calculate x values from width [x]
+	- Redraw graph on change of screen size [ ]
+	- Use full floats and round in JS [ ]
 - Auto generate labels
 - Improve colouration
+- Vanquish magic numbers
+- 
 
 */
+
 
 var Importers = [
 	['DE', 86.8, 'Germany'],
@@ -41,6 +49,15 @@ var Importers = [
 	['AT', 7.6, 'Austria'],
 	['HR', 5.9, 'Hungary'],
 	['IR', 5.3, 'Ireland']
+]
+
+var Exporters = [
+	['RU', 185.9, 'Russia'],
+	['NO', 106.6, 'Norway'],
+	['NL', 54.5, 'Netherlands'],
+	['UK', 12.0, 'United Kingdom'],
+	['AL', 34.8, 'Algeria'],
+	['LB', 6.5, 'Libya'],
 ]
 
 var Paths = [
@@ -75,7 +92,10 @@ var Paths = [
 	['ALSP', 10]
 ]
 
-function drawGraphs(svg) {
+function drawGraphs(svg, height, width) {
+
+	svg.empty();
+
 	var cImports = [
 		['DE',50],
 		['IT',147],
@@ -102,10 +122,49 @@ function drawGraphs(svg) {
 	];
 
 	var y2 = 50;
+	var xExport = 200;
+	var xImport = width - 300;
+
+	for(var i = 0; i < Exporters.length; i++) {
+		var x1 = xExport;
+		var x2 = xExport;
+
+		console.log('Generating '+Exporters[i])
+
+		//calculate y1
+		var y1 = y2;
+		console.log(y1);
+		//calculate y2
+		y2 = y1 + Math.round(Exporters[i][1]);
+		console.log(y2);
+		//draw line
+		svg.append('line')
+			.attr('x1', x1)
+			.attr('x2', x2)
+			.attr('y1', y1)
+			.attr('y2', y2)
+			.attr('stroke-width', 2)
+			.attr('stroke', 'grey');
+		//calculate points for label
+
+		var my = (y1 + y2) / 2;
+		//todo: tweak with baseline
+
+		svg.append('text')
+			.attr('x', x1 - 100)
+			.attr('y', my)
+			.text(Exporters[i][2])
+			.attr('class', 'export')
+			.attr('id', Exporters[i][0]);
+
+		y2 += 10;
+	}
+
+	y2 = 50;
 
 	for(var i = 0; i < Importers.length; i++) {
-		var x1 = 800;
-		var x2 = 800;
+		var x1 = xImport;
+		var x2 = xImport;
 
 		console.log('Generating '+Importers[i])
 
@@ -142,6 +201,8 @@ function drawGraphs(svg) {
 		var data = 'M';
 		var y1 = -1;
 		var y2 = -1;
+
+		
 		
 		//get name of path
 		var name = Paths[i][0];
@@ -185,11 +246,11 @@ function drawGraphs(svg) {
 		//console.log('y2 is '+y2);
 		//console.log('import country index is '+importCountryIndex);
 
-		var mx = 800 - 200;
+		var mx = xImport - xExport;
 
-		data += ' 200 ' + y1;
+		data += ' '+ xExport + ' ' + y1;
 		
-		data += ' C '+mx+','+y1+' '+mx+','+y2+' 800,'+y2;
+		data += ' C '+mx+','+y1+' '+mx+','+y2+' '+xImport+','+y2;
 
 		
 		//add LHS labels
@@ -201,12 +262,12 @@ function drawGraphs(svg) {
 		
 		//add width to y2
 		y2 += Paths[i][1]
-		data += ' L 800 ' + y2;
+		data += ' L '+xImport+' ' + y2;
 
 		//add bezier control points
 
 		y1 += Paths[i][1]
-		data += ' C '+mx+','+y2+' '+mx+','+y1+' 200,'+y1;
+		data += ' C '+mx+','+y2+' '+mx+','+y1+' '+xExport+','+y1;
 		
 
 		cExports[exportCountryIndex][1] = y1;
@@ -226,13 +287,13 @@ function drawGraphs(svg) {
 		var importPosition = y1 - (Paths[i][1] / 2) + 7;
 
 		svg.append('text')
-			.attr('x', 170)
+			.attr('x', xExport - 30)
 			.attr('y', importPosition)
 			.attr('class', 'axisLabel import'+importCountry)
 			.text(Paths[i][4]);
 
 		svg.append('text')
-			.attr('x', 810)
+			.attr('x', xImport + 10)
 			.attr('y', y2 - (Paths[i][1] / 2) + 7)
 			.attr('class', 'axisLabel export'+exportCountry)
 			.text(Paths[i][3]);
@@ -240,32 +301,41 @@ function drawGraphs(svg) {
 
 
 	}
+
+	$('.axisLabel').hide();
 }
 
 $(document).ready(function() {
 
-	drawGraphs(d3.select('#chart'));
-	$('.axisLabel').hide();
+	console.log($('#chart').width());
 
-	$('.export').mouseover(function() {
-		var exportCode = '.export' + $(this).attr('id')
 
-		var expr = '[id^=' + $(this).attr('id') + ']';
+//	drawGraphs(d3.select('#chart'), 1000, $('#chart').width());
+	
 
-		$('path').not(expr).fadeOut();
-		$('.axisLabel').not(exportCode).fadeOut();
+	$( window ).resize(function() {
+		$('#chart').empty();
+		drawGraphs(d3.select('#chart'), 1000, $('#chart').width());
 
-		$(exportCode).fadeIn();
-		$(expr).fadeIn();
-	});
+		$('.export').mouseover(function() {
+			var exportCode = '.export' + $(this).attr('id')
+	
+			var expr = '[id^=' + $(this).attr('id') + ']';
+	
+			$('path').not(expr).fadeOut();
+			$('.axisLabel').not(exportCode).fadeOut();
+	
+			$(exportCode).fadeIn();
+			$(expr).fadeIn();
+		});
 
-	$('.export, .import').mouseout(function() {
-		/* possible to delay? amazon-menu-like logic*/
-		$('path').fadeIn();
-		$('.axisLabel').fadeOut();
-	});
+		$('.export, .import').mouseout(function() {
+			/* possible to delay? amazon-menu-like logic*/
+			$('path').fadeIn();
+			$('.axisLabel').fadeOut();
+		});
 
-	$('.import').mouseover(function() {
+		$('.import').mouseover(function() {
 
 		var thisID= $(this).attr('id');
 		var importCode = '.import' + thisID;
@@ -278,7 +348,12 @@ $(document).ready(function() {
 		
 		$(importCode).fadeIn();
 		$(expr).fadeIn();		
+		});
 	});
+
+	$(window).resize();
+
+	
 
 
 
@@ -292,9 +367,9 @@ $(document).ready(function() {
 <h4>One pixel = 1 billion cubic metres (2012 figures)<br/>Source: British Petroleum World Energy Report 2013<br/>Hover for detail</h4>
 
 <!-- SCALE: 1 pixel = -->
-<svg id='chart' height='1000' width='1000'>
+<svg id='chart' style='width:100%; height:80%; min-height:1000px; min-width:500px'>
 
-	<text x='20' y='168' id='RU' class='export'>Russia</text>
+	<!--<text x='20' y='168' id='RU' class='export'>Russia</text>
 	<line x1='200' x2='200' y1='50' y2='236' style='stroke:grey;stroke-width:2' />
 
 	<text x='20' y='300' id='NO' class='export'>Norway</text>
@@ -313,7 +388,7 @@ $(document).ready(function() {
 	<line x1='200' x2='200' y1='495' y2='503' style='stroke:grey;stroke-width:2' />
 
 	<text x='20' y='517' id='LB' class='export'>Libya</text>
-	<line x1='200' x2='200' y1='513' y2='520' style='stroke:grey;stroke-width:2' />
+	<line x1='200' x2='200' y1='513' y2='520' style='stroke:grey;stroke-width:2' />-->
 
 
 
