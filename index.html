@@ -25,6 +25,7 @@ TODO:
 	- Generate exporter labels [x]
 	- Generate importer labels [x]
 	- Calculate x values from width [x]
+	- Calculate y values?
 	- Redraw graph on change of screen size [x]
 	- Use full floats and round in JS [ ]
 - Auto generate labels [x]
@@ -32,6 +33,8 @@ TODO:
 - Vanquish magic numbers
 - Tweak label placement to account for line height
 - Set a timer for the fadeout [x]
+- Add Ukraine by only adding values to the arrays
+- Move colouration to importers / exporters
 
 */
 
@@ -53,32 +56,32 @@ var Importers = [
 ]
 
 var Exporters = [
-	['RU', 185.9, 'Russia', 0],
-	['NO', 106.6, 'Norway', 0],
-	['NL', 54.5, 'Netherlands', 0],
+	['RU', 185.9, 'Russia', 0, '#FF3B2F'],
+	['NO', 106.6, 'Norway', 0, '#71CC58'],
+	['NL', 54.5, 'Netherlands', 0, '#76B6CC'],
 	['UK', 12.0, 'United Kingdom', 0],
 	['AL', 34.8, 'Algeria', 0],
 	['LB', 6.5, 'Libya', 0]
 ]
 
 var Paths = [
-	['RUDE', 30, '#FF3B2F', '16.1 %', '34.6 %'],
-	['RUIT', 14, '#FF3B2F', '7.3 %', '22.8 %'],
-	['RUFR', 7, '#FF3B2F', '3.9 %'],
-	['RUTR', 25, '#FF3B2F', '13.1 %'],
-	['RUBE', 7, '#FF3B2F', '3.9 %'],
-	['RUNL', 2, '#FF3B2F', '1.1 %'],
-	['RUPL', 9, '#FF3B2F', '4.8 %'],
-	['RUCZ', 7, '#FF3B2F', '3.6 %'],
-	['RUAT', 5, '#FF3B2F', '2.5 %'],
-	['RUHR', 5,	 '#FF3B2F', '2.6 %'],
-	['NLDE', 25, '#76B6CC', '', '29.1 %'],
-	['NLIT', 7,  '#76B6CC', '', '11.4 %'],
+	['RUDE', 30, '#FF3B2F'],
+	['RUIT', 14, '#FF3B2F'],
+	['RUFR', 7, '#FF3B2F'],
+	['RUTR', 25, '#FF3B2F'],
+	['RUBE', 7, '#FF3B2F'],
+	['RUNL', 2, '#FF3B2F'],
+	['RUPL', 9, '#FF3B2F'],
+	['RUCZ', 7, '#FF3B2F'],
+	['RUAT', 5, '#FF3B2F'],
+	['RUHR', 5,	 '#FF3B2F'],
+	['NLDE', 25, '#76B6CC'],
+	['NLIT', 7,  '#76B6CC'],
 	['NLUK', 7,  '#76B6CC'],
 	['NLFR', 9,  '#76B6CC'],
 	['NLBE', 5,  '#76B6CC'],
-	['NODE', 31, '#71CC58', '', '35.4 %'],
-	['NOIT', 6, '#71CC58', '', '10.6 %'],
+	['NODE', 31, '#71CC58'],
+	['NOIT', 6, '#71CC58'],
 	['NOUK', 27, '#71CC58'],
 	['NOFR',18, '#71CC58'],
 	['NOBE', 9, '#71CC58'],
@@ -96,31 +99,6 @@ var Paths = [
 function drawGraphs(svg, height, width) {
 
 	svg.empty();
-
-	var cImports = [
-		['DE',50],
-		['IT',147],
-		['UK',217],
-		['FR',262],
-		['TR',307],	
-		['BE',352],
-		['NL',388],
-		['SP',413],
-		['PL',436],
-		['CZ',457],
-		['AT',477],
-		['HR',495],
-		['IR',511]
-	];
-	var cExports = [
-		['RU', 50],
-		['NO',246],
-		['NL',363],
-		['AL',428],
-		['UK',473],
-		['IR',495],
-		['LB',513]
-	];
 
 	var y2 = 50;
 	var xExport = 200;
@@ -230,21 +208,6 @@ function drawGraphs(svg, height, width) {
 			}
 		}
 
-		/*for(exportCountryIndex = 0; exportCountryIndex < cExports.length; exportCountryIndex++) {
-			if(cExports[exportCountryIndex][0] == exportCountry) {
-				y1 = cExports[exportCountryIndex][1];
-				console.log('found export country - ' + cExports[exportCountryIndex]);
-				break;
-			}
-		}
-		if(y1 == -1) {
-			y1 = 0;
-			cExports.push([exportCountry, 0]);
-			exportCountryIndex = cExports.length - 1;
-		}*/
-		//console.log('y1 is '+y1);
-		//console.log('export country index is '+exportCountryIndex);
-
 		//get last 2 characters of name
 		var importCountry = name.substring(2, 4);
 		//get current cExports for that country code
@@ -256,19 +219,6 @@ function drawGraphs(svg, height, width) {
 				break;
 			}
 		}
-		/*for(importCountryIndex = 0; importCountryIndex < cImports.length; importCountryIndex++) {
-			if(cImports[importCountryIndex][0] == importCountry) {
-				y2 = cImports[importCountryIndex][1];
-				break;
-			}
-		}
-		if(y2 == -1) {
-			y2 = 0;
-			cImports.push([importCountryIndex, 0]);
-			importCountryIndex = cImports.length - 1;
-		}*/
-		//console.log('y2 is '+y2);
-		//console.log('import country index is '+importCountryIndex);
 
 		var mx = xImport - xExport;
 
@@ -276,14 +226,6 @@ function drawGraphs(svg, height, width) {
 		
 		data += ' C '+mx+','+y1+' '+mx+','+y2+' '+xImport+','+y2;
 
-		
-		//add LHS labels
-
-
-
-		
-
-		
 		//add width to y2
 		y2 += Paths[i][1]
 		data += ' L '+xImport+' ' + y2;
@@ -362,7 +304,7 @@ $(document).ready(function() {
 				$('path').fadeIn();
 				$('.axisLabel').fadeOut();
 				window.clearInterval(timer);
-			}, 750);
+			}, 600);
 		});
 
 		$('.import').mouseover(function() {
