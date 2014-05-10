@@ -22,15 +22,16 @@ h1 {
 
 TODO:
 - Responsive (scales with screen size)
-	- Generate exporter labels [ ]
+	- Generate exporter labels [x]
 	- Generate importer labels [x]
 	- Calculate x values from width [x]
-	- Redraw graph on change of screen size [ ]
+	- Redraw graph on change of screen size [x]
 	- Use full floats and round in JS [ ]
-- Auto generate labels
-- Improve colouration
+- Auto generate labels [x]
+- Improve colouration 
 - Vanquish magic numbers
-- 
+- Tweak label placement to account for line height
+- Set a timer for the fadeout [x]
 
 */
 
@@ -48,7 +49,7 @@ var Importers = [
 	['CZ', 10.0, 'Czech Republic',0],
 	['AT', 7.6, 'Austria',0],
 	['HR', 5.9, 'Hungary',0],
-	['IR', 5.3, 'Ireland',0]
+	['IR', 5.3, 'Ireland',0],
 ]
 
 var Exporters = [
@@ -70,7 +71,7 @@ var Paths = [
 	['RUPL', 9, '#FF3B2F', '4.8 %'],
 	['RUCZ', 7, '#FF3B2F', '3.6 %'],
 	['RUAT', 5, '#FF3B2F', '2.5 %'],
-	['RUHR', 5, '#FF3B2F', '2.6 %'],
+	['RUHR', 5,	 '#FF3B2F', '2.6 %'],
 	['NLDE', 25, '#76B6CC', '', '29.1 %'],
 	['NLIT', 7,  '#76B6CC', '', '11.4 %'],
 	['NLUK', 7,  '#76B6CC'],
@@ -151,7 +152,7 @@ function drawGraphs(svg, height, width) {
 		//todo: tweak with baseline
 
 		svg.append('text')
-			.attr('x', x1 - 100)
+			.attr('x', x1 - 120)
 			.attr('y', my)
 			.text(Exporters[i][2])
 			.attr('class', 'export')
@@ -193,8 +194,9 @@ function drawGraphs(svg, height, width) {
 		//todo: tweak with baseline
 
 		svg.append('text')
-			.attr('x', x1 + 20)
+			.attr('x', x1 + 120)
 			.attr('y', my)
+			.attr('text-anchor', 'end')
 			.text(Importers[i][2])
 			.attr('class', 'import')
 			.attr('id', Importers[i][0]);
@@ -311,7 +313,7 @@ function drawGraphs(svg, height, width) {
 		var importPosition = y1 - (Paths[i][1] / 2) + 7;
 
 		
-		var pcImports = (Paths[i][1] / Importers[exportCountryIndex][1] * 100).toFixed(1);
+		var pcImports = (Paths[i][1] / Importers[importCountryIndex][1] * 100).toFixed(1);
 		svg.append('text')
 			.attr('x', xExport - 30)
 			.attr('y', importPosition)
@@ -334,6 +336,8 @@ function drawGraphs(svg, height, width) {
 
 $(document).ready(function() {
 
+	var timer = 0;
+
 	console.log($('#chart').width());
 
 	$( window ).resize(function() {
@@ -342,6 +346,7 @@ $(document).ready(function() {
 
 		$('.export').mouseover(function() {
 			var exportCode = '.export' + $(this).attr('id')
+			window.clearInterval(timer);
 	
 			var expr = '[id^=' + $(this).attr('id') + ']';
 	
@@ -353,12 +358,15 @@ $(document).ready(function() {
 		});
 
 		$('.export, .import').mouseout(function() {
-			/* possible to delay? amazon-menu-like logic*/
-			$('path').fadeIn();
-			$('.axisLabel').fadeOut();
+			timer = setInterval(function() {			
+				$('path').fadeIn();
+				$('.axisLabel').fadeOut();
+				window.clearInterval(timer);
+			}, 750);
 		});
 
 		$('.import').mouseover(function() {
+			window.clearInterval(timer);
 
 		var thisID= $(this).attr('id');
 		var importCode = '.import' + thisID;
