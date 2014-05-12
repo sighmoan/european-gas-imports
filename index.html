@@ -2,14 +2,26 @@
 <head>
 
 <link rel="stylesheet" type="text/css" href="https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/webfonts/ostrich-sans.css">
+<link href='http://fonts.googleapis.com/css?family=Molengo' rel='stylesheet' type='text/css'>
 <style>
 
-text,h4 {
+text {
 	font-family:'Ostrich Sans';
 }
 
+text .sizeLabel {
+	stroke:'#d4d4d2';
+	.font-family:'Molengo' !important;
+}
+
+h4 {
+	font-family:'Molengo';
+	font-size:12px;
+
+}
+
 h1 {
-	font-family:'helvetica';
+	font-family:'Molengo';
 	font-weight:'regular';
 }
 </style>
@@ -25,20 +37,20 @@ TODO:
 	- Generate exporter labels [x]
 	- Generate importer labels [x]
 	- Calculate x values from width [x]
-	- Calculate y values?
 	- Redraw graph on change of screen size [x]
-	- Use full floats and round in JS [ ]
+	- Use full floats and round in JS [x]
+	- Calculate y values
 - Auto generate labels [x]
 - Improve colouration 
 - Vanquish magic numbers
-- Tweak label placement to account for line height
-	- Add line labels
+- Tweak label placement to account for line height [x]
+	- Add line labels for full exports [ ] / import [x]
 - Better font for labels? More readable
 - Set a timer for the fadeout [x]
 - Add Ukraine by only adding values to the arrays [x]
 - Add Libyan exports
-- Move colouration to importers / exporters
-- Size relative to entire production / consumption rather than imports / exports?
+- Move colouration to importers / exporters [x]
+- Refactor into d3
 
 */
 
@@ -70,34 +82,34 @@ var Exporters = [
 ]
 
 var Paths = [
-	['RUDE', 30],
-	['RUIT', 14],
-	['RUFR', 7],
-	['RUTR', 25],
-	['RUUE', 30],
-	['RUBE', 7],
-	['RUNL', 2],
-	['RUPL', 9],
-	['RUCZ', 7],
-	['RUAT', 5],
-	['RUHR', 5],
-	['NLDE', 25],
-	['NLIT', 7],
-	['NLUK', 7],
-	['NLFR', 9],
-	['NLBE', 5],
-	['NODE', 31],
-	['NOIT', 6],
-	['NOUK', 27],
-	['NOFR',18],
-	['NOBE', 9],
-	['NONL', 8],
-	['NOSP', 2],
-	['NOCZ', 3],
-	['NOAT', 1],
-	['UKBE', 5],
-	['UKNL', 2],
-	['UKIR', 5],
+	['RUDE', 30.0],
+	['RUIT', 13.6],
+	['RUFR', 7.3],
+	['RUTR', 24.5],
+	['RUUE', 29.8],
+	['RUBE', 7.3],
+	['RUNL', 2.1],
+	['RUPL', 9.0],
+	['RUCZ', 6.6],
+	['RUAT', 4.7],
+	['RUHR', 4.8],
+	['NLDE', 25.3],
+	['NLIT', 6.8],
+	['NLUK', 7.3],
+	['NLFR', 9.4],
+	['NLBE', 5.2],
+	['NODE', 30.8],
+	['NOIT', 6.3],
+	['NOUK', 26.8],
+	['NOFR', 17.9],
+	['NOBE', 9.0],
+	['NONL', 8.0],
+	['NOSP', 2.3],
+	['NOCZ', 3.4],
+	['NOAT', 1.3],
+	['UKBE', 4.6],
+	['UKNL', 2.1],
+	['UKIR', 5.3],
 	['ALIT', 21],
 	['ALSP', 10]
 ]
@@ -107,8 +119,13 @@ function drawGraphs(svg, height, width) {
 	svg.empty();
 
 	var y2 = 50;
+	var lineHeight = 12;
 	var xExport = 200;
 	var xImport = width - 300;
+
+
+	//Show labels for total exports
+
 
 	for(var i = 0; i < Exporters.length; i++) {
 		var x1 = xExport;
@@ -175,11 +192,10 @@ function drawGraphs(svg, height, width) {
 		//calculate points for label
 
 		var my = (y1 + y2) / 2;
-		//todo: tweak with baseline
 
 		svg.append('text')
 			.attr('x', x1 + 120)
-			.attr('y', my)
+			.attr('y', my + (lineHeight / 2))
 			.attr('text-anchor', 'end')
 			.text(Importers[i][2])
 			.attr('class', 'import')
@@ -189,6 +205,21 @@ function drawGraphs(svg, height, width) {
 
 		y2 += 10;
 	}
+
+	svg.selectAll('.sizeLabel')
+		.data(Importers)
+		.enter()
+		.append('text')
+		.text(function (d) { return d[1] + ' bcm'})
+		.attr('x', x1 + 125)
+		.attr('y', function(d, i) { 
+			console.log(d[0]);
+			var yL = Math.floor(d[3] + (Math.round(d[1])/2) + (lineHeight / 2)); 
+			console.log(yL);
+			return yL;
+		})
+		.attr('text-anchor', 'start')
+		.attr('opacity', 0.3);
 
 	for(var i = 0; i < Paths.length; i++) {
 		var data = 'M';
@@ -209,7 +240,6 @@ function drawGraphs(svg, height, width) {
 		for(exportCountryIndex = 0; exportCountryIndex < Exporters.length; exportCountryIndex++) {
 			if(Exporters[exportCountryIndex][0] == exportCountry) {
 				y1 = Exporters[exportCountryIndex][3];
-				console.log('found export country - ' + Exporters[exportCountryIndex]);
 				break;
 			}
 		}
@@ -233,12 +263,12 @@ function drawGraphs(svg, height, width) {
 		data += ' C '+mx+','+y1+' '+mx+','+y2+' '+xImport+','+y2;
 
 		//add width to y2
-		y2 += Paths[i][1]
+		y2 += Math.round(Paths[i][1])
 		data += ' L '+xImport+' ' + y2;
 
 		//add bezier control points
 
-		y1 += Paths[i][1]
+		y1 += Math.round(Paths[i][1])
 		data += ' C '+mx+','+y2+' '+mx+','+y1+' '+xExport+','+y1;
 		
 
@@ -284,9 +314,7 @@ function drawGraphs(svg, height, width) {
 
 $(document).ready(function() {
 
-	var timer = 0;
-
-	console.log($('#chart').width());
+	var timer = 0;	
 
 	$( window ).resize(function() {
 		$('#chart').empty();
@@ -338,7 +366,7 @@ $(document).ready(function() {
 
 </head>
 <body>
-<h1>EUROPEAN NATURAL GAS IMPORTS</h1>
+<h1>European Natural Gas Imports</h1>
 <h4>One pixel = 1 billion cubic metres (2012 figures)<br/>Source: British Petroleum World Energy Report 2013<br/>Hover for detail</h4>
 
 <svg id='chart' style='width:100%; height:80%; min-height:1000px; min-width:500px'>
