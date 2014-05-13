@@ -87,37 +87,37 @@ var Exporters = [
 ]
 
 var Paths = [
-	['RUDE', 30.0],
-	['RUIT', 13.6],
-	['RUFR', 7.3],
-	['RUTR', 24.5],
-	['RUUE', 29.8],
-	['RUBE', 7.3],
-	['RUNL', 2.1],
-	['RUPL', 9.0],
-	['RUCZ', 6.6],
-	['RUAT', 4.7],
-	['RUHR', 4.8],
-	['NLDE', 25.3],
-	['NLIT', 6.8],
-	['NLUK', 7.3],
-	['NLFR', 9.4],
-	['NLBE', 5.2],
-	['NODE', 30.8],
-	['NOIT', 6.3],
-	['NOUK', 26.8],
-	['NOFR', 17.9],
-	['NOBE', 9.0],
-	['NONL', 8.0],
-	['NOSP', 2.3],
-	['NOCZ', 3.4],
-	['NOAT', 1.3],
-	['UKBE', 4.6],
-	['UKNL', 2.1],
-	['UKIR', 5.3],
-	['ALIT', 21],
-	['ALSP', 10],
-	['LBIT', 6.5]
+	['RU', 'DE', 30.0],
+	['RU', 'IT', 13.6],
+	['RU', 'FR', 7.3],
+	['RU', 'TR', 24.5],
+	['RU', 'UE', 29.8],
+	['RU', 'BE', 7.3],
+	['RU', 'NL', 2.1],
+	['RU', 'PL', 9.0],
+	['RU', 'CZ', 6.6],
+	['RU', 'AT', 4.7],
+	['RU', 'HR', 4.8],
+	['NL', 'DE', 25.3],
+	['NL', 'IT', 6.8],
+	['NL', 'UK', 7.3],
+	['NL', 'FR', 9.4],
+	['NL', 'BE', 5.2],
+	['NO', 'DE', 30.8],
+	['NO', 'IT', 6.3],
+	['NO', 'UK', 26.8],
+	['NO', 'FR', 17.9],
+	['NO', 'BE', 9.0],
+	['NO', 'NL', 8.0],
+	['NO', 'SP', 2.3],
+	['NO', 'CZ', 3.4],
+	['NO', 'AT', 1.3],
+	['UK', 'BE', 4.6],
+	['UK', 'NL', 2.1],
+	['UK', 'IR', 5.3],
+	['AL', 'IT', 21],
+	['AL', 'SP', 10],
+	['LB', 'IT', 6.5]
 ]
 
 function drawGraphs(svg, height, width) {
@@ -228,16 +228,10 @@ function drawGraphs(svg, height, width) {
 
 	for(var i = 0; i < Paths.length; i++) {
 		var data = 'M';
-		var y1 = -1;
-		var y2 = -1;
+		var y1, y2 = 0;
 		
-		//get name of path
-		var name = Paths[i][0];
-		//get first 2 characters of name
-		var exportCountry = name.substring(0, 2);
-		//get current cImports for that country code
+		var exportCountry = Paths[i][0];
 		var exportCountryIndex = 0;
-
 		for(exportCountryIndex = 0; exportCountryIndex < Exporters.length; exportCountryIndex++) {
 			if(Exporters[exportCountryIndex][0] == exportCountry) {
 				y1 = Exporters[exportCountryIndex][3];
@@ -245,8 +239,7 @@ function drawGraphs(svg, height, width) {
 			}
 		}
 
-		//get last 2 characters of name
-		var importCountry = name.substring(2, 4);
+		var importCountry = Paths[i][1];
 		var importCountryIndex = 0;
 		Importers.forEach(function(element, index) {
 				if(element[0] == importCountry) {
@@ -254,54 +247,44 @@ function drawGraphs(svg, height, width) {
 					y2 = element[3];
 				}
 			});
-		/*for(importCountryIndex = 0; importCountryIndex < Importers.length; importCountryIndex++) {
-			if(Importers[importCountryIndex][0] == importCountry) {
-				y2 = Importers[importCountryIndex][3];
-				break;
-			}
-		}*/
 
 		var mx = xImport - xExport;
 
 		data += ' '+ xExport + ' ' + y1;
-		
 		data += ' C '+mx+','+y1+' '+mx+','+y2+' '+xImport+','+y2;
 
 		//add width to y2
-		y2 += Math.round(Paths[i][1])
+		y2 += Math.round(Paths[i][2])
 		data += ' L '+xImport+' ' + y2;
 
 		//add bezier control points
 
-		y1 += Math.round(Paths[i][1])
+		y1 += Math.round(Paths[i][2])
 		data += ' C '+mx+','+y2+' '+mx+','+y1+' '+xExport+','+y1;
 		
-
 		Exporters[exportCountryIndex][3] = y1;
 		Importers[importCountryIndex][3] = y2;
 
-
-
 		svg.append('path')
 			.attr('d', data)
-			.attr('id', name)
+			.attr('id', Paths[i][0] + Paths[i][1])
 			.attr('stroke', 'none')
 			.attr('fill', Exporters[exportCountryIndex][4]);
 
-		var importPosition = y1 - (Paths[i][1] / 2) + 7;
+		var importPosition = y1 - (Paths[i][2] / 2) + 7;
 
 		
-		var pcImports = (Paths[i][1] / Importers[importCountryIndex][1] * 100).toFixed(1);
+		var pcImports = (Paths[i][2] / Importers[importCountryIndex][1] * 100).toFixed(1);
 		svg.append('text')
 			.attr('x', xExport - 40)
 			.attr('y', importPosition)
 			.attr('class', 'axisLabel import'+importCountry)
 			.text(pcImports + " %");
 
-		var pcExports = (Paths[i][1] / Exporters[exportCountryIndex][1] * 100).toFixed(1);
+		var pcExports = (Paths[i][2] / Exporters[exportCountryIndex][1] * 100).toFixed(1);
 		svg.append('text')
 			.attr('x', xImport + 20)
-			.attr('y', y2 - (Paths[i][1] / 2) + 7)
+			.attr('y', y2 - (Paths[i][2] / 2) + 7)
 			.attr('class', 'axisLabel export'+exportCountry)
 			.text(pcExports + " %");
 
@@ -344,7 +327,6 @@ $(document).ready(function() {
 
 		var thisID= $(this).attr('id');
 		var importCode = '.import' + thisID;
-		console.log(importCode);
 
 		var expr = '[id$=' + $(this).attr('id') + ']';
 
