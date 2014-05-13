@@ -1,6 +1,6 @@
 <html>
 <head>
-
+<title>European Natural Gas Imports</title>
 <link rel="stylesheet" type="text/css" href="https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/webfonts/ostrich-sans.css">
 <link href='http://fonts.googleapis.com/css?family=Molengo' rel='stylesheet' type='text/css'>
 <style>
@@ -44,11 +44,10 @@ TODO:
 - Improve colouration 
 - Vanquish magic numbers
 - Tweak label placement to account for line height [x]
-	- Add line labels for full exports [ ] / import [x]
-- Better font for labels? More readable
+	- Add line labels for full exports [x] / import [x]
 - Set a timer for the fadeout [x]
 - Add Ukraine by only adding values to the arrays [x]
-- Add Libyan exports
+- Add Libyan exports [x]
 - Move colouration to importers / exporters [x]
 - Refactor into d3
 
@@ -123,7 +122,33 @@ function drawGraphs(svg, height, width) {
 	var xExport = 200;
 	var xImport = width - 300;
 
-	svg.selectAll('.importLine')
+	svg.append('text')
+		.text('Importers')
+		.attr('x', xImport + 120)
+		.attr('y', 20)
+		.attr('text-anchor', 'end');
+
+	svg.append('text')
+		.text('Total Imports')
+		.attr('x', xImport + 125)
+		.attr('y', 20)
+		.attr('text-anchor', 'start')
+		.attr('opacity', 0.3);
+
+	svg.append('text')
+		.text('Exporters')
+		.attr('x', xExport - 120)
+		.attr('y', 20)
+		.attr('text-anchor', 'start');
+
+	svg.append('text')
+		.text('Total Exports')
+		.attr('x', xExport - 125)
+		.attr('y', 20)
+		.attr('text-anchor', 'end')
+		.attr('opacity', 0.3);
+
+	svg.selectAll('.exportLine')
 		.data(Exporters)
 		.enter()
 		.append('line')
@@ -218,15 +243,19 @@ function drawGraphs(svg, height, width) {
 
 		//get last 2 characters of name
 		var importCountry = name.substring(2, 4);
-		//get current cExports for that country code
 		var importCountryIndex = 0;
-		//console.log('import country is '+importCountry);
-		for(importCountryIndex = 0; importCountryIndex < Importers.length; importCountryIndex++) {
+		Importers.forEach(function(element, index) {
+				if(element[0] == importCountry) {
+					importCountryIndex = index;
+					y2 = element[3];
+				}
+			});
+		/*for(importCountryIndex = 0; importCountryIndex < Importers.length; importCountryIndex++) {
 			if(Importers[importCountryIndex][0] == importCountry) {
 				y2 = Importers[importCountryIndex][3];
 				break;
 			}
-		}
+		}*/
 
 		var mx = xImport - xExport;
 
@@ -334,7 +363,7 @@ $(document).ready(function() {
 <h1>European Natural Gas Imports</h1>
 <h4>One pixel = 1 billion cubic metres (2012 figures)<br/>Source: British Petroleum World Energy Report 2013<br/>Hover for detail</h4>
 
-<svg id='chart' style='width:100%; height:80%; min-height:600px; min-width:500px'>
+<svg id='chart' style='width:100%; height:80%; min-height:600px; min-width:500px; margin-top:30px;'>
 </svg>
 </body>
 </html>
