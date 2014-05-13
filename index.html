@@ -78,7 +78,7 @@ var Exporters = [
 	['NL', 54.5, 'Netherlands', 0, '#76B6CC'],
 	['UK', 12.0, 'United Kingdom', 0, '#E28922'],
 	['AL', 34.8, 'Algeria', 0, '#1F94E8'],
-	['LB', 6.5, 'Libya', 0]
+	['LB', 6.5, 'Libya', 0, '#ffa500']
 ]
 
 var Paths = [
@@ -111,129 +111,101 @@ var Paths = [
 	['UKNL', 2.1],
 	['UKIR', 5.3],
 	['ALIT', 21],
-	['ALSP', 10]
+	['ALSP', 10],
+	['LBIT', 6.5]
 ]
 
 function drawGraphs(svg, height, width) {
 
 	svg.empty();
 
-	var y2 = 50;
 	var lineHeight = 12;
 	var xExport = 200;
 	var xImport = width - 300;
 
+	svg.selectAll('.importLine')
+		.data(Exporters)
+		.enter()
+		.append('line')
+		.attr('x1', xExport)
+		.attr('x2', xExport)
+		.attr('y1', function(d,i) { if(i==0) d[3] = 50; else d[3] = Exporters[i-1][3] + Exporters[i-1][1] + 10; return d[3] })
+		.attr('y2', function(d,i) { return d[3] + d[1] })
+		.attr('stroke', 'grey')
+		.attr('stroke-width', 2);
 
-	//Show labels for total exports
+	svg.selectAll('.export')
+		.data(Exporters)
+		.enter()
+		.append('text')
+		.text(function(d) {return d[2]})
+		.attr('x', xExport - 120)
+		.attr('y', function(d,i) { return d[1]/2 + d[3] + (lineHeight /2) })
+		.attr('text-anchor', 'start')
+		.attr('class', 'export')
+		.attr('id', function(d) { return d[0] });
 
+	svg.selectAll('.sizeLabel .export')
+		.data(Exporters)
+		.enter()
+		.append('text')
+		.text(function (d) { return d[1] + ' bcm'})
+		.attr('x', xExport - 125)
+		.attr('y', function(d, i) { 
+			var yL = Math.floor(d[3] + (Math.round(d[1])/2) + (lineHeight / 2)); 
+			return yL;
+		})
+		.attr('text-anchor', 'end')
+		.attr('opacity', 0.3)
+		.attr('class', 'sizeLabel')
+		.attr('class', 'export');
 
-	for(var i = 0; i < Exporters.length; i++) {
-		var x1 = xExport;
-		var x2 = xExport;
+	svg.selectAll('.importLine')
+		.data(Importers)
+		.enter()
+		.append('line')
+		.attr('x1', xImport)
+		.attr('x2', xImport)
+		.attr('y1', function(d,i) { if(i==0) d[3] = 50; else d[3] = Importers[i-1][3] + Importers[i-1][1] + 10; return d[3] })
+		.attr('y2', function(d,i) { return d[3] + d[1] })
+		.attr('stroke', 'grey')
+		.attr('stroke-width', 2);
 
-		console.log('Generating '+Exporters[i])
+	svg.selectAll('.import')
+		.data(Importers)
+		.enter()
+		.append('text')
+		.text(function(d) {return d[2]})
+		.attr('x', xImport + 120)
+		.attr('y', function(d,i) { return d[1]/2 + d[3] + (lineHeight /2) })
+		.attr('text-anchor', 'end')
+		.attr('class', 'import')
+		.attr('id', function(d) {return d[0]});
 
-		//calculate y1
-		var y1 = y2;
-		console.log(y1);
-		//calculate y2
-		y2 = y1 + Math.round(Exporters[i][1]);
-		console.log(y2);
-		//draw line
-		svg.append('line')
-			.attr('x1', x1)
-			.attr('x2', x2)
-			.attr('y1', y1)
-			.attr('y2', y2)
-			.attr('stroke-width', 2)
-			.attr('stroke', 'grey');
-		//calculate points for label
-
-		var my = (y1 + y2) / 2;
-		//todo: tweak with baseline
-
-		svg.append('text')
-			.attr('x', x1 - 120)
-			.attr('y', my)
-			.text(Exporters[i][2])
-			.attr('class', 'export')
-			.attr('id', Exporters[i][0]);
-
-		Exporters[i][3] = y1;
-
-		console.log(Exporters[i]);
-
-
-		y2 += 10;
-	}
-
-	y2 = 50;
-
-	for(var i = 0; i < Importers.length; i++) {
-		var x1 = xImport;
-		var x2 = xImport;
-
-		console.log('Generating '+Importers[i])
-
-		//calculate y1
-		var y1 = y2;
-		console.log(y1);
-		//calculate y2
-		y2 = y1 + Math.round(Importers[i][1]);
-		console.log(y2);
-		//draw line
-		svg.append('line')
-			.attr('x1', x1)
-			.attr('x2', x2)
-			.attr('y1', y1)
-			.attr('y2', y2)
-			.attr('stroke-width', 2)
-			.attr('stroke', 'grey');
-		//calculate points for label
-
-		var my = (y1 + y2) / 2;
-
-		svg.append('text')
-			.attr('x', x1 + 120)
-			.attr('y', my + (lineHeight / 2))
-			.attr('text-anchor', 'end')
-			.text(Importers[i][2])
-			.attr('class', 'import')
-			.attr('id', Importers[i][0]);
-
-		Importers[i][3] = y1;
-
-		y2 += 10;
-	}
-
-	svg.selectAll('.sizeLabel')
+	svg.selectAll('.sizeLabel .import')
 		.data(Importers)
 		.enter()
 		.append('text')
 		.text(function (d) { return d[1] + ' bcm'})
-		.attr('x', x1 + 125)
+		.attr('x', xImport + 125)
 		.attr('y', function(d, i) { 
-			console.log(d[0]);
 			var yL = Math.floor(d[3] + (Math.round(d[1])/2) + (lineHeight / 2)); 
-			console.log(yL);
 			return yL;
 		})
 		.attr('text-anchor', 'start')
-		.attr('opacity', 0.3);
+		.attr('opacity', 0.3)
+		.attr('class', 'sizeLabel')
+		.attr('class', 'import');
 
 	for(var i = 0; i < Paths.length; i++) {
 		var data = 'M';
 		var y1 = -1;
 		var y2 = -1;
-
-		
 		
 		//get name of path
 		var name = Paths[i][0];
-		//console.log('Name of path is '+name);
 		//get first 2 characters of name
 		var exportCountry = name.substring(0, 2);
-		//console.log('export country is '+exportCountry);
 		//get current cImports for that country code
 		var exportCountryIndex = 0;
 
@@ -273,12 +245,7 @@ function drawGraphs(svg, height, width) {
 		
 
 		Exporters[exportCountryIndex][3] = y1;
-		//console.log('export country ' +exportCountryIndex+' y is ' + y1);
 		Importers[importCountryIndex][3] = y2;
-
-		//console.log('export countries are' + cExports)
-
-		//console.log(name+' is '+data);
 
 
 
@@ -304,8 +271,6 @@ function drawGraphs(svg, height, width) {
 			.attr('y', y2 - (Paths[i][1] / 2) + 7)
 			.attr('class', 'axisLabel export'+exportCountry)
 			.text(pcExports + " %");
-
-
 
 	}
 
@@ -369,7 +334,7 @@ $(document).ready(function() {
 <h1>European Natural Gas Imports</h1>
 <h4>One pixel = 1 billion cubic metres (2012 figures)<br/>Source: British Petroleum World Energy Report 2013<br/>Hover for detail</h4>
 
-<svg id='chart' style='width:100%; height:80%; min-height:1000px; min-width:500px'>
+<svg id='chart' style='width:100%; height:80%; min-height:600px; min-width:500px'>
 </svg>
 </body>
 </html>
